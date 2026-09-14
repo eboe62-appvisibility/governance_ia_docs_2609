@@ -1,18 +1,62 @@
+# === Entornos virtuales Python ===
+src/log_ingestor/venv/
+**/venv/
+*.pyc
+__pycache__/
+
+# === Logs ===
+*.log
+/var/log/*
+resources/logs/*.log
+resources/logs/*.txt
+
 # === Archivos temporales / swap ===
 *.swp
 *.swo
 *~
 .DS_Store
 
+# === Docker ===
+*.pid
+*.sock
+.env
+.env.*
+docker-compose.override.yml
+
+# Permitir templates necesarios para CI
+!.env.template
+!**/.env.template
+
+# === Otros ===
+/*.bak
+*.tmp
+
+# === Understand-Anything (must be versioned independently) ===
+Understand-Anything/
+
 # === Documentation working copies ===
 * copy*
 
-# === Backups ===
+# === Backups de base de datos ===
+/backups/
+/backups_old/
+*.backup
 *.bak
-*.tmp
+*.dump
+*.sql
 
 # === Certificados ===
 *.pem
 *.key
 *.p12
 *.crt
+
+# === Documentation Podcast, Slides, etc ===
+docs/Project_ADRs/*
+docs/Project_Corrections/*
+*.m4a
+*.pdf
+*.xlsx
+*.xls
+*.pptx
+*.ppt
