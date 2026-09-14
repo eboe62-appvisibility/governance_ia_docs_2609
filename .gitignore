@@ -1,0 +1,18 @@
+# === Archivos temporales / swap ===
+*.swp
+*.swo
+*~
+.DS_Store
+
+# === Documentation working copies ===
+* copy*
+
+# === Backups ===
+*.bak
+*.tmp
+
+# === Certificados ===
+*.pem
+*.key
+*.p12
+*.crt

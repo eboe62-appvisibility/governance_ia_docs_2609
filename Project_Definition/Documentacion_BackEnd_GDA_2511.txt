@@ -1,0 +1,316 @@
+DESCRIPCIÓN GENERAL DEL BACKEND DEL PROYECTO GDA (Versión de Referencia)
+Versión: 251117
+
+==========================================
+1. INTRODUCCIÓN GENERAL
+==========================================
+
+El Backend del proyecto GDA se ha diseñado siguiendo una arquitectura de microservicios independientes
+gestionados por un API Gateway. Esta arquitectura promueve la escalabilidad, la mantenibilidad y la
+separación de responsabilidades entre dominios funcionales.
+
+Cada microservicio es autónomo, cuenta con su propio modelo de datos, lógica de negocio y controladores,
+y se comunica exclusivamente a través del API Gateway, que actúa como capa orquestadora.
+
+==========================================
+2. ESTRUCTURA GENERAL DE CARPETAS
+==========================================
+
+El proyecto presenta la siguiente estructura base:
+
+/api-gateway       → Módulo central de enrutamiento y orquestación
+/backend/           → Contenedor de los microservicios individuales
+/frontend/          → Cliente de presentación (fuera del alcance del presente documento)
+/test/              → Pruebas e integración continua
+
+Cada microservicio dentro de /backend/ se define en carpetas específicas:
+  - gda-agrupacion
+  - gda-admingade
+  - gda-autenticacion
+  - gda-estructura
+  - gda-imputacion
+  - gda-listado
+  - gda-log
+  - gda-persona
+
+Todos los microservicios comparten una estructura uniforme de carpetas internas:
+  ├── data/
+  │   ├── model/        → Entidades JPA asociadas a tablas de la base de datos
+  │   └── repository/   → Interfaces que definen consultas a la BBDD
+  ├── service/
+  │   ├── impl/         → Implementaciones de las interfaces de servicio
+  │   └── *.java        → Interfaces de lógica de negocio
+  ├── web/
+  │   └── controller/   → Controladores REST que exponen los endpoints
+  ├── commons/          → Clases DTO, Criteria y excepciones comunes
+  ├── exception/        → Manejo centralizado de errores (GlobalExceptionHandler)
+  ├── resources/        → Archivos YML de configuración para distintos entornos
+  └── Application.java  → Clase principal de arranque (Spring Boot)
+
+==========================================
+3. ARQUITECTURA Y FLUJO DE DATOS
+==========================================
+
+BASE DE DATOS (BBDD)
+    │
+    ▼
+Microservicio X (ej. gda-estructura)
+    │
+    ├── Repository → obtiene datos de las tablas
+    ├── ServiceImpl → aplica validaciones, mapeos y reglas de negocio
+    ├── Controller → expone endpoints REST
+    ▼
+API GATEWAY
+    │
+    ├── Rutea llamadas del frontend al microservicio correspondiente
+    ├── Puede combinar datos de varios microservicios
+    └── Maneja seguridad, logging y correo electrónico
+    ▼
+FRONTEND (cliente web o móvil)
+
+Ejemplo:
+
+               ┌──────────────────────────────────────┐
+               │    BASE DE DATOS                     │
+               │  (Tablas: iniciativa_grupo,          │
+               │  persona, estructura, ...)           │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │    REPOSITORIO (Repository)          │
+               │  data/repository/...                 │
+               │  - IniciativaGrupoRepository         │
+               │  - Métodos findBy...()               │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │   SERVICIO (ServiceImpl)             │
+               │  service/impl/...                    │
+               │  - Aplica lógica de negocio          │
+               │  - Valida duplicados                 │
+               │  - Mapea Entidad ⇄ DTO              │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │    CONTROLADOR REST (API)            │
+               │  web/controller/...                  │
+               │  - GET /iniciativasGrupos            │
+               │  - POST /iniciativasGrupos           │
+               │  - PUT /iniciativasGrupos            │
+               │  - DELETE /iniciativasGrupos         │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │        API GATEWAY                   │
+               │  api-gateway/service/...             │
+               │  - Usa FeignClient o WebClient       │
+               │  - Reenvía la llamada REST           │
+               │  - Combina datos de servicios        │
+               │  - Devuelve DTO Response             │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │   API GATEWAY CONTROLLER             │
+               │  api-gateway/controller/...          │
+               │  - Endpoint público /api/...         │
+               │  - Devuelve JSON al cliente          │
+               └─────────────────┬────────────────────┘
+                                 │
+                                 ▼
+               ┌──────────────────────────────────────┐
+               │         FRONTEND                     │
+               │  Vue / Quasar / Axios                │
+               │  - Llama al endpoint del             │
+               │    Gateway                           │
+               │  - Muestra datos en tabla o          │
+               │    formulario                        │
+               └──────────────────────────────────────┘
+
+==========================================
+4. API GATEWAY
+==========================================
+
+El API Gateway (módulo `gda-apigateway`) utiliza **Spring Cloud Gateway** y **OpenFeign**
+para la comunicación entre el frontend y los microservicios.
+
+Principales componentes:
+  - config/ → Definición de rutas (RouteLocatorConfig) y políticas de acceso
+  - service/ → Interfaces e implementaciones que consumen los microservicios
+  - dto/ → Objetos de transferencia (request/response)
+  - web/ → Controladores que exponen los endpoints REST al frontend
+  - resources/ → Configuraciones YML por entorno (local, dev, pre, pro)
+
+Ejemplo de flujo (basado en el microservicio gda-estructura):
+  - `IniciativaGrupoRepository` obtiene los datos de la tabla `iniciativa_grupo`
+  - `IniciativaGrupoServiceImpl` aplica lógica de negocio y devuelve DTOs
+  - `IniciativaGrupoController` expone endpoints como GET /iniciativasGrupos
+  - El API Gateway reenvía las llamadas al controlador correspondiente
+  - El Frontend consume el endpoint público del Gateway y muestra los datos en JSON
+
+==========================================
+5. TEST BACKEND: PRUEBAS UNITARIAS EN EL BACKEND
+==========================================
+
+Los test unitarios en el Backend GDA tienen como propósito:
+
+-   Validar el comportamiento de los servicios sin necesidad de levantar el contexto completo de Spring.
+-   Asegurar que las reglas de negocio se aplican correctamente.
+-   Verificar que los repositorios interactúan como se espera con las entidades.
+-   Simular dependencias externas mediante Mockito.
+-   Facilitar el refactor y evolución del código sin introducir regresiones.
+
+Los test unitarios no deben depender de la base de datos real ni del APIGateway.
+
+Cada microservicio contiene su carpeta de pruebas en:
+    src/test/java/com/ineco/gda/<modulo>/
+
+La estructura típica es:
+    /service/
+      └── impl/
+          └── <NombreServicio>Test.java
+
+La prioridad de los test es confirmar el buen funcionamiento de  la lógica de negocio en los servicios.
+
+Los test de servicio siguen de modo homogéneo el siguiente patrón:
+
+1.  Definición del servicio a testear con @InjectMocks
+2.  Mocks de repositorios y otras dependencias con @Mock
+3.  Método @BeforeEach para inicializar entidades necesarias
+4.  Tests separados por casos de uso:
+    -   Caso OK (flujo correcto)
+    -   Caso KO (validaciones o excepciones)
+    -   Caso vacío (repositorio devuelve vacío)
+5.  Uso explícito de verify() para asegurar interacción con repositorios
+
+
+Normas de estilo para los test:
+- No utilizar ModelMapper en los tests.
+- Crear manualmente las entidades y DTO necesarios.
+- Mantener nombres coherentes
+- Separar claramente “Arrange – Act – Assert - Verify”.
+- Testear únicamente la lógica del método objetivo, no del framework.
+
+==========================================
+6. COMPONENTES PRINCIPALES
+==========================================
+
+**Repositorios (data/repository/)**
+Definen las consultas a la base de datos, empleando Spring Data JPA.
+Ejemplo: `findByIdAndFechaBajaIsNull(...)` o consultas personalizadas con `@Query`.
+
+**Servicios (service/ y service/impl/)**
+- Encapsulan la lógica de negocio de cada dominio.
+- Transforman entidades JPA en DTOs mediante ModelMapper.
+- Gestionan validaciones, control de duplicados y excepciones personalizadas.
+
+**Controladores (web/controller/)**
+- Exponen los endpoints REST al API Gateway.
+- Manejan las operaciones CRUD estándar: GET, POST, PUT, DELETE.
+- Retornan objetos DTO o lanzan excepciones controladas.
+
+**Clases comunes (commons/)**
+Incluyen DTOs, Criteria para filtrado dinámico y excepciones reutilizables entre microservicios.
+
+**Manejo de excepciones (exception/)**
+Centralizado mediante `GlobalExceptionHandler`, que devuelve respuestas normalizadas con mensajes
+de error y códigos HTTP coherentes.
+
+==========================================
+7. DESARROLLO DE NUEVOS EVOLUTIVOS (PLANTILLA BASE)
+==========================================
+
+Para desarrollar nuevos módulos o microservicios dentro del backend se recomienda seguir
+una plantilla de trabajo estructurada y homogénea:
+
+1️⃣ **Creación del microservicio**
+- Copiar la estructura base de un microservicio existente (por ejemplo, `gda-estructura`).
+- Cambiar el `artifactId` y las rutas de paquete según el nuevo dominio.
+- Configurar los `application.yml` con los datos de conexión y puertos.
+
+2️⃣ **Modelado de entidades**
+- Crear las clases JPA dentro de `data/model/`.
+- Aplicar las anotaciones `@Entity`, `@Table`, `@ManyToOne`, `@JoinColumn`, etc.
+- Mantener una nomenclatura coherente en nombres de tablas y atributos.
+
+3️⃣ **Repositorio**
+- Definir las interfaces en `data/repository/` extendiendo `JpaRepository`.
+- Crear consultas específicas mediante `@Query` si es necesario.
+
+4️⃣ **Servicio**
+- Definir la interfaz en `service/` y su implementación en `service/impl/`.
+- Usar `ModelMapper` o mapeos manuales para convertir entidades ↔ DTOs.
+- Implementar validaciones y gestión de errores con excepciones personalizadas.
+
+5️⃣ **Controlador**
+- Definir endpoints REST en `web/controller/`.
+- Asociar las rutas con la nomenclatura `/api/<modulo>/<entidad>`.
+- Utilizar notaciones `@GetMapping`, `@PostMapping`, `@PutMapping`, `@DeleteMapping`.
+
+6️⃣ **Integración con API Gateway**
+- Añadir la configuración de ruta en `RouteLocatorConfig` dentro del Gateway.
+- Verificar la correspondencia entre path y microservicio destino.
+
+7️⃣ **Pruebas y despliegue**
+- Crear pruebas unitarias con Spring Boot Test.
+- Validar la integración a través del Gateway antes de publicar.
+- Desplegar con scripts automatizados (CI/CD) o contenedores Docker.
+
+==========================================
+8. DEPENDENCIAS Y TECNOLOGÍAS
+==========================================
+
+- Lenguaje base: Java 17
+- Framework principal: Spring Boot 3.1.4
+- Comunicación interservicios: Spring Cloud (OpenFeign, Gateway)
+- Mapeo de objetos: ModelMapper
+- Seguridad: Spring Security y JWT
+- Documentación: Springdoc OpenAPI
+- Correo electrónico: Jakarta Mail + Spring Boot Starter Mail
+- Gestión de dependencias: Maven
+- Librerías adicionales: Apache POI (reportes Excel), Lombok
+- JUnit 5 como framework principal de pruebas.
+- Mockito para la creación de mocks y definición de comportamientos simulados.
+- AssertJ o Assertions de JUnit para verificaciones.
+
+==========================================
+9. POLÍTICAS Y CONSIDERACIONES
+==========================================
+
+- Los microservicios **no deben comunicarse entre sí directamente**.
+  Toda comunicación pasa por el **API Gateway**.
+- Cada microservicio debe ser **autocontenible** (modelo, lógica y datos propios).
+- El manejo de excepciones debe centralizarse en `GlobalExceptionHandler`.
+- Las fechas deben manipularse con notación estándar (dd/MM/yyyy) para compatibilidad frontend.
+- Las configuraciones deben aislarse por entorno (`application-local.yml`, `application-dev.yml`, etc.).
+- Los DTO deben mantenerse independientes del modelo interno (evita acoplamientos).
+- Se recomienda emplear pruebas unitarias y de integración con Spring Test.
+
+==========================================
+10. POSIBLES INCOHERENCIAS DETECTADAS
+==========================================
+
+- En algunos documentos se menciona un microservicio “finance” o “admingade” con la misma referencia
+  de artifactId. Esto podría indicar una fusión o error de nomenclatura.
+- El Gateway depende de múltiples módulos “commons”, lo cual sugiere una duplicidad parcial
+  entre microservicios y su capa común.
+- No se detalla el mecanismo exacto de autenticación JWT entre API Gateway y microservicios.
+  Puede requerir definición adicional en un proyecto nuevo.
+- El nombre de los entornos (pre, pro) no siempre coincide entre configuraciones.
+
+==========================================
+11. CONCLUSIÓN
+==========================================
+
+El Backend del proyecto GDA constituye una base sólida para proyectos empresariales basados en
+arquitectura de microservicios. Su diseño modular y uso de tecnologías estándar de Spring Boot
+favorecen la mantenibilidad, escalabilidad y despliegue independiente por módulo.
+
+Para futuros proyectos semejantes, se recomienda conservar esta estructura, reforzar la consistencia
+en los nombres de los módulos, y centralizar configuraciones transversales como autenticación, logging
+y monitorización.
+

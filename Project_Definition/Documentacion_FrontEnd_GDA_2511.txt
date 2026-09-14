@@ -1,0 +1,267 @@
+DESCRIPCIÓN GENERAL DEL FRONTEND DEL PROYECTO GDA (Versión de Referencia)
+Versión: 251023
+
+==========================================
+1. INTRODUCCIÓN GENERAL
+==========================================
+
+El FrontEnd del proyecto GDA está desarrollado sobre el framework **Vue 3** con **Quasar Framework**
+y un sistema de módulos funcionales orientado a la integración con microservicios backend a través
+de un **API Gateway**. La arquitectura del cliente se organiza de forma modular y escalable,
+aprovechando las ventajas de **Pinia** como gestor de estado y de los **composables** para una lógica
+reactiva desacoplada.
+
+El objetivo principal es proporcionar una interfaz eficiente, reutilizable y fácilmente extensible,
+manteniendo la coherencia visual y funcional a través de todo el ecosistema GDA.
+
+==========================================
+2. ESTRUCTURA GENERAL DE CARPETAS
+==========================================
+
+El proyecto presentará la siguiente estructura del FrontEnd:
+
+/src/
+  ├── app/
+  │   ├── routes.js                 → Definición de rutas y permisos
+  │   ├── menu.js                   → Estructura del menú principal
+  │   ├── configItemsMenuBreadcrumbs.js → Configuración de breadcrumbs
+  │
+  ├── components/                   → Componentes de interfaz reutilizables
+  ├── composables/                  → Funciones reactivas y lógicas reutilizables
+  ├── endpoints/                    → Definición de endpoints hacia el API Gateway
+  ├── models/                       → Modelos de datos (Front ↔ Back)
+  ├── modules/                      → Módulos funcionales (ej. admingade, estructura, persona)
+  │   ├── views/                    → Vistas específicas de cada módulo
+  │   └── composables/service/      → Conexión entre modelos, servicios y vistas
+  ├── services/                     → Conectores Axios con el Gateway
+  ├── store/                        → Gestión de estado global (Pinia)
+  ├── i18n/                         → Internacionalización
+  ├── utils/                        → Funciones auxiliares y helpers
+  ├── assets/                       → Recursos gráficos y estáticos
+  └── App.vue / main.js             → Puntos de entrada de la aplicación
+
+==========================================
+3. ARQUITECTURA Y FLUJO DE DATOS
+==========================================
+
+BACKEND API (via API Gateway)
+     │
+     ▼
+Servicios Axios (src/services/*.js)
+     │
+     ▼
+Composables (useFetch*, useSave*, useUpdate*, etc.)
+     │
+     ▼
+Modelos (src/models/*.js)
+     │
+     ▼
+Vistas (Vue components dentro de src/modules/.../views/)
+     │
+     ▼
+Componentes UI (Listas, Formularios, Tablas, Diálogos)
+
+Ejemplo:
+
+               ┌─────────────────────────────────────┐
+               │         USUARIO                     │
+               │ (Interacción con UI Quasar)         │
+               └────────────────┬────────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │      COMPONENTE DE VISTA (.vue)    │
+               │  src/modules/.../views/...         │
+               │  - Renderiza interfaz              │
+               │  - Captura eventos del usuario     │
+               │  - Llama a funciones de lógica     │
+               └────────────────┬───────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │        COMPOSABLE (useFetch...)    │
+               │  src/modules/.../composables/...   │
+               │  - Gestiona estado reactivo        │
+               │  - Llama a servicios Axios         │
+               │  - Transforma datos para la vista  │
+               └────────────────┬───────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │          SERVICIO AXIOS            │
+               │        src/services/...js          │
+               │  - Define funciones CRUD           │
+               │  - Usa ENDPOINTS del Gateway       │
+               │  - Maneja errores HTTP             │
+               └────────────────┬───────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │        ENDPOINTS (Gateway)         │
+               │        src/endpoints/...           │
+               │  - Define URLs base (api/...)      │
+               │  - Centraliza configuración        │
+               │  - Aplica token JWT si existe      │
+               └────────────────┬───────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │       API GATEWAY (Backend)        │
+               │  - Recibe petición REST            │
+               │  - Rutea a microservicio GDA       │
+               │  - Devuelve respuesta JSON         │
+               └────────────────┬───────────────────┘
+                                │
+                                ▼
+               ┌────────────────────────────────────┐
+               │      MICROSERVICIO BACKEND         │
+               │  - Procesa lógica de negocio       │
+               │  - Accede a la base de datos       │
+               │   - Devuelve DTO al Gateway        │
+               └────────────────────────────────────┘
+
+==========================================
+4. API GATEWAY
+==========================================
+
+El **API Gateway** actúa como intermediario entre el FrontEnd y los microservicios del Backend.
+Todas las peticiones HTTP se canalizan a través de este punto de entrada único, garantizando
+la seguridad, el control de tráfico y la uniformidad de los datos intercambiados.
+
+**Características principales:**
+- Centraliza las rutas hacia los distintos microservicios.
+- Gestiona la autenticación y autorización mediante tokens JWT.
+- Aplica políticas de CORS, control de errores y logging.
+- Simplifica las URLs públicas utilizadas por el FrontEnd.
+
+**Integración en el FrontEnd:**
+- Los endpoints del Gateway se definen en `/src/endpoints/`.
+- Cada servicio Axios referencia las rutas del Gateway, no las de los microservicios internos.
+- Ejemplo:
+  En lugar de consumir directamente `http://gda-estructura/api/estructura`,
+  el FrontEnd accede a:
+  `http://gda-gateway/api/estructura`.
+
+**Gestión de rutas y seguridad:**
+- El FrontEnd incluye interceptores Axios que adjuntan el token JWT en cada petición.
+- En caso de expiración o error 401, el interceptor redirige al módulo de autenticación.
+- La configuración del Gateway se parametriza mediante variables de entorno (`process.env`),
+  diferenciando entornos *local*, *dev*, *pre* y *pro*.
+
+**Ejemplo de flujo:**
+
+1️⃣ El usuario ejecuta una acción en la interfaz (por ejemplo, "Guardar iniciativa").
+2️⃣ El composable correspondiente invoca un servicio Axios →
+   `axios.post(ENDPOINTS.initiativasGrupos, payload)`.
+3️⃣ La llamada se dirige al Gateway (`/api-gateway/estructura/...`).
+4️⃣ El Gateway reenvía la petición al microservicio `gda-estructura`.
+5️⃣ La respuesta JSON se devuelve al FrontEnd, que actualiza el estado global vía Pinia.
+
+**Ventajas del enfoque:**
+- Aislamiento del FrontEnd respecto a la estructura interna del Backend.
+- Mayor seguridad y control centralizado.
+- Posibilidad de modificar rutas o balanceadores sin afectar al cliente.
+- Homogeneidad en el tratamiento de respuestas y errores.
+
+==========================================
+5. COMPONENTES PRINCIPALES
+==========================================
+
+**Servicios (services/)**
+Cada archivo define las funciones CRUD (GET, POST, PUT, DELETE) que se comunican con el Gateway mediante Axios.
+Ejemplo: `responsibleTeamServices.js` implementa llamadas a `getInitiativesGroups()`.
+
+**Composables (useFetch..., useSave...)**
+- Encapsulan la lógica reactiva de llamadas API y transformación de datos.
+- Usan métodos auxiliares como `_transformParametersForFront()` para adaptar los objetos al formato esperado.
+
+**Modelos (models/)**
+- Contienen transformadores entre el modelo del backend y la vista del front.
+- Ejemplo: `modelInitiativeGroup()` transforma un objeto API en una estructura usable:
+  {
+    group: modelGroup(...),
+    initiative: modelInitiative(...),
+    dateHigh,
+    dateLow,
+    dateEffect
+  }
+
+**Vistas (views/)**
+Cada vista representa una pantalla funcional. Ejemplo:
+`IniciativaGrupo.vue` es la vista principal del módulo adminEquipo,
+donde se inicializan los datos con `fetchInitiativesGroups()`, se transforman
+y se asignan a variables reactivas (`initiativesGroupsCustomizedAll`).
+
+==========================================
+6. DESARROLLO DE NUEVOS EVOLUTIVOS (PLANTILLA BASE)
+==========================================
+
+Para añadir un nuevo módulo o funcionalidad (“evolutivo”), se siguen los siguientes pasos:
+
+1️⃣ **Ruteo**
+- Definir nueva entrada en `src/app/routes.js` con URL, componente y permisos.
+- Agregar configuración en `menu.js` y `configItemsMenuBreadcrumbs.js`.
+
+2️⃣ **Modelos**
+- Crear `src/models/<entidad>.js` con versiones Front y Back (p. ej. `modelContractEtt` y `modelBackContractEtt`).
+- Exportar desde `src/models/index.js` para uso global.
+
+3️⃣ **Servicios**
+- Añadir endpoint en `src/endpoints/index.js`.
+- Implementar servicios en `src/services/<modulo>Services.js`.
+
+4️⃣ **Composables**
+- Crear `useFetch<Entidad>.js`, `useSave<Entidad>.js`, `useUpdate<Entidad>.js` dentro del módulo correspondiente.
+
+5️⃣ **Vista**
+- Implementar componente principal `.vue` dentro de `src/modules/<modulo>/views/`.
+- Usar `setup()` para inicializar datos y vincularlos con los composables.
+
+==========================================
+7. DEPENDENCIAS Y TECNOLOGÍAS
+==========================================
+
+- **Vue 3** con composición API
+- **Quasar Framework 2.16.0**
+- **Pinia** (gestión de estado)
+- **Axios** (comunicación con API Gateway)
+- **Vue Router 4**
+- **Vue I18n 9**
+- **Lodash / Moment.js** (utilidades de datos y fechas)
+- **Prettier / ESLint** (estilo y linting)
+- **Node.js ≥16 / Vite** (compilación y bundling)
+
+==========================================
+8. POLÍTICAS Y CONSIDERACIONES
+==========================================
+
+- La comunicación con el backend se realiza **exclusivamente vía API Gateway**.
+- Los **modelos Front y Back** deben mantenerse separados para evitar acoplamiento.
+- Cada módulo debe ser **independiente y autocontenible**, sin dependencias cruzadas.
+- Los **nombres de rutas y componentes** deben seguir un estándar (PascalCase para vistas, camelCase para funciones).
+- Los **composables** deben retornar solo lo necesario: datos reactivos (`ref`) y funciones públicas.
+- El **control de errores** debe centralizarse en interceptores de Axios y en composables de validación.
+- Se recomienda que cada componente use **lazy loading** para optimizar rendimiento.
+
+==========================================
+9. POSIBLES INCOHERENCIAS DETECTADAS
+==========================================
+
+- En algunos módulos, las rutas y permisos no coinciden con las claves declaradas en `CONFIG_VIEWS`.
+- La coexistencia de Moment.js y utilidades de fecha propias podría generar duplicidad funcional.
+- Algunos modelos Front no tienen su correspondiente versión Back (`modelBack...`),
+  lo que puede provocar inconsistencias en la comunicación con el backend.
+- No hay una convención unificada en los nombres de los composables (`useFetch` / `useGet`).
+
+==========================================
+10. CONCLUSIÓN
+==========================================
+
+El FrontEnd del proyecto GDA es una arquitectura modular y extensible basada en Vue 3 y Quasar,
+que facilita el desarrollo de aplicaciones empresariales complejas.
+Su separación clara entre servicios, modelos, composables y vistas garantiza un mantenimiento
+eficiente y una rápida adaptación a nuevos requerimientos.
+
+Para futuros proyectos similares se recomienda mantener esta organización,
+reforzar la coherencia en nombres de módulos y establecer guías unificadas para
+modelos y composables.
