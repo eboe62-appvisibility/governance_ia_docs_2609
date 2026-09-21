@@ -71,7 +71,7 @@ Se adopta un modelo de identidad multi-aplicación en `gda_autenticacion`:
 ### Riesgos Mitigados
 
 * Colisión de dominio entre `tipo_autoridad_id` y `tipo_comunicacion_id`: ambos ya apuntaban al mismo catálogo `tipo_autoridad`, sin riesgo de incompatibilidad de valores al promover `tipo_comunicacion_id` a `tipo_autoridad_id` en la fila SPJ.
-* Orden de despliegue: la duplicación de filas (paso crítico) se ejecutó únicamente después de confirmar que `gda-autenticacion`, `api-gateway` y `spj-api-gateway` con el código migrado estaban ya desplegados y activos en el servidor de Desa — evitando el `IncorrectResultSizeDataAccessException` que habría afectado a las 11 personas duplicadas si el orden se hubiera invertido.
+* Orden de despliegue: la migración de BBDD (duplicación de filas) y el despliegue del código migrado en `gda-autenticacion`, `api-gateway` y `spj-api-gateway` deben ejecutarse de forma coordinada — desplegar el código sin la migración de BBDD, o viceversa, produce `IncorrectResultSizeDataAccessException` para las personas con fila duplicada.
 
 ---
 
