@@ -52,11 +52,27 @@ Understand-Anything/
 *.crt
 
 # === Documentation Podcast, Slides, etc ===
-docs/Project_ADRs/*
-docs/Project_Corrections/*
 *.m4a
 *.pdf
 *.xlsx
 *.xls
 *.pptx
 *.ppt
+
+# === Ficheros marcados para borrar ===
+*_BORRAR*
+
+# === Documentos de trabajo locales de cada proyecto (no versionados) ===
+# Este repositorio se monta como docs/ en cada proyecto (ADR-0035): las rutas
+# son relativas a su raíz, sin prefijo docs/.
+# StatusQuo: logs del servidor (IPs, direcciones de correo). Plan de acción: registro de trabajo.
+Project_Implementation/**/*StatusQuo*
+Project_Implementation/**/*planaccion*
+Project_ADRs/
+Project_Corrections/
+
+# === Understand-Anything: datos temporales y de procesamiento local ===
+arquitectura/*/.ua/intermediate/
+arquitectura/*/.ua/tmp/
+arquitectura/*/.ua/diff-overlay.json
+arquitectura/*/.ua/.trash-*/
