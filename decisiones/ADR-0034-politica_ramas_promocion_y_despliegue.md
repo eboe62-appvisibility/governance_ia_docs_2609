@@ -108,7 +108,7 @@ ADR-1102 y ADR-1103 rigen el repositorio de gobernanza/conocimiento. Este ADR ri
 
 * .github/workflows/ci.yml
 * Makefile: `audit-runtime-ci`, `test-reproducibilidad`, `test-SRE-completo`
-* docs/Project_Implementation/Servidor_DigitalOcean_Implementacion.txt (FASE 3, FASE 7, Apéndice B)
+* docs/Project_Implementation/monitoring/Servidor_DigitalOcean_Implementacion.txt (FASE 3, FASE 7, Apéndice B)
 * ADR-0031 (auditoría runtime en CI), ADR-0019 (estrategia de tests de resiliencia), ADR-0028 (reproducibilidad)
 * ADR-1102, ADR-1103 (modelo de ramas del repositorio de gobernanza/conocimiento)
 * Tags: `fase4_cierre`, `archivo/gobernanza_ia`

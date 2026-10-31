@@ -13,7 +13,7 @@ Sistema Operativo: Ubuntu 24.04.3 LTS (x64)
 ==========================================
 Qué es:
 - Documento normativo y operativo: define el "cómo".
-- La Visión (docs/Project_Definition/00_PROJECT_VISION_...) define el "qué" y el "por qué".
+- La Visión (docs/Project_Definition/monitoring/00_PROJECT_VISION_...) define el "qué" y el "por qué".
 - Los ADR (docs/decisiones/) definen las reglas de arquitectura vigentes.
 - El plan de corrección (Servidor_DigitalOcean_Correccion_260712.txt) recogió el plan
   priorizado de hardening (PRIORIDADES 1-15). Es un histórico local, no versionado:
@@ -577,7 +577,7 @@ verificable y resiliente. Esta fase no añade arquitectura: valida y endurece.
                 Su único consumidor era el job del honeypot (fuera de alcance).
 
 5.3. Automatismos del host y defensa activa
-    Situación: la plantilla docs/arquitectura/cron_host.txt declara tres entradas
+    Situación: la plantilla docs/arquitectura/monitoring/cron_host.txt declara tres entradas
     para el crontab de root, pero el servidor no tiene crontab de root
     ("no crontab for root", 261029). Revisión de cada automatismo:
 
@@ -1088,7 +1088,7 @@ A.16. Tests que no pueden fallar (30/10/2026)                      [PENDIENTE]
 APÉNDICE B – PROCEDIMIENTO DE VERIFICACIÓN (StatusQuo)
 ==========================================
 Ejecutar en el servidor y archivar la salida como
-docs/Project_Implementation/Servidor_DigitalOcean_StatusQuo_<aammdd>.md
+docs/Project_Implementation/monitoring/Servidor_DigitalOcean_StatusQuo_<aammdd>.md
 Ese fichero se conserva solo en local (ignorado por .gitignore): contiene IPs y
 direcciones de correo y el repositorio es público.
 
