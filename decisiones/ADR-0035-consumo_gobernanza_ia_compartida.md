@@ -37,11 +37,11 @@ Este ADR es transversal: se aplica a todo proyecto que consuma estos repositorio
 |---|---|---|---|
 | Proyecto | El de cada proyecto | Código, infraestructura y configuración. **No contiene gobernanza IA ni documentación IA** | Raíz |
 | Gobernanza IA | `governance_ia_2607` | Protocolos, skills, plantillas, índice integral de ADR (`governance/14_ADR_INDEX.md`) y particularidades de cada proyecto (`governance/projects/<proyecto>/`: `CLAUDE.md`, instrucciones de Copilot, etc.) | `ai/` |
-| Documentación IA | `governance_ia_docs_2609` | Toda la documentación IA de todos los proyectos: `decisiones/` (todas las ADR, propias y transversales) y, por tipo, `<Tipo>/<proyecto>/` (`Project_Definition`, `Project_Implementation`, `arquitectura`, …) | `docs/` |
+| Documentación IA | `governance_ia_docs_2609` | Toda la documentación IA de todos los proyectos: `decisiones/` (todas las ADR, propias y transversales) y, por tipo, `<Tipo>/<proyecto>/` (`Project_Definition`, `arquitectura`, …) | `docs/` |
 
 * Cada documento existe una sola vez, en su repositorio.
 * El repositorio del proyecto ignora `ai/`, `docs/` y los puntos de entrada (o el proyecto no es un repositorio git).
-* Los documentos de trabajo locales que no deben publicarse (StatusQuo con datos del servidor, plan de acción, `Project_ADRs/`, `Project_Corrections/`, copias, `*_BORRAR*`) quedan ignorados por el `.gitignore` de `governance_ia_docs_2609`, con rutas relativas a su raíz.
+* Los documentos de trabajo locales que no deben publicarse (`Project_Implementation/` entero, StatusQuo con datos del servidor y plan de acción en cualquier carpeta, `Project_ADRs/`, `Project_Corrections/`, copias, `*_BORRAR*`) quedan ignorados por el `.gitignore` de `governance_ia_docs_2609`, con rutas relativas a su raíz.
 
 ### 2. ADR
 
