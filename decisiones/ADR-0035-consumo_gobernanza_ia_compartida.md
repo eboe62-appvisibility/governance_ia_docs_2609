@@ -60,8 +60,9 @@ Este ADR es transversal: se aplica a todo proyecto que consuma estos repositorio
 2. **Rama.** Los dos repositorios se siguen en `develop` y se actualizan solo con `git pull --ff-only`.
 3. **Checkout parcial.** Cada proyecto puede excluir partes que no use. Requisitos:
    * Nunca se excluyen `governance/`, `skills/` ni `templates/` de `governance_ia_2607`, ni `decisiones/` de `governance_ia_docs_2609`.
+   * Excepción: cada proyecto puede excluir las carpetas de los demás proyectos, `governance/projects/<otro proyecto>/` en `ai/` y `<Tipo>/<otro proyecto>/` en `docs/`. Así no se cargan por error las instrucciones ni la documentación de otro proyecto.
    * Los patrones y su motivo se documentan en el perfil del proyecto (§4).
-4. **Puntos de entrada.** Su contenido vive en `governance/projects/<proyecto>/` (o, transitoriamente, donde indique el perfil). En la raíz del proyecto solo hay enlaces o punteros, no versionados, creados por la herramienta de configuración. El punto de entrada común es `governance/00_AI_ENTRYPOINT.md`.
+4. **Puntos de entrada.** Su contenido vive en `governance/projects/<proyecto>/`. En la raíz del proyecto solo hay enlaces o punteros, no versionados, creados por la herramienta de configuración. El punto de entrada común es `governance/00_AI_ENTRYPOINT.md`.
 5. **Finales de línea.** LF obligatorio en los dos repositorios, impuesto por `.gitattributes` (`* text=auto eol=lf`; binarios marcados), según `Configuracion_Equipo_2608`. Se recomienda `core.autocrlf=false`.
 6. **Reproducibilidad.** Cada proyecto tiene una herramienta idempotente (target de make, script) que clona `ai/` y `docs/` si no existen, aplica su checkout parcial y crea los puntos de entrada. Volver a ejecutarla no cambia nada.
 7. **Cambios en los repositorios compartidos.** Nunca se edita directamente en `develop`:
@@ -75,12 +76,12 @@ Añadir un proyecto consiste en añadir su columna; no requiere un ADR nuevo.
 
 | | server_monitoring_2509 (`monitoring`) | GDA |
 |---|---|---|
-| `docs/` | Clon completo de `governance_ia_docs_2609` | Clon completo de `governance_ia_docs_2609` |
+| `docs/` | Clon de `governance_ia_docs_2609` | Clon completo de `governance_ia_docs_2609` |
 | Carpetas propias en `docs/` | `<Tipo>/monitoring/` | `<Tipo>/GDA/` (hoy solo `Project_Definition/GDA/`) |
-| Checkout parcial de `docs/` | — | no-cone: `/*`, `!/*/`, `/decisiones/`, `/*/GDA/` (`decisiones/` y los ficheros de la raíz siempre entran; las carpetas `<Tipo>/<otro proyecto>/` no) |
+| Checkout parcial de `docs/` | no-cone: `/*`, `!/*/`, `/decisiones/`, `/*/monitoring/` | no-cone: `/*`, `!/*/`, `/decisiones/`, `/*/GDA/` (`decisiones/` y los ficheros de la raíz siempre entran; las carpetas `<Tipo>/<otro proyecto>/` no) |
 | Checkout parcial de `ai/` (modo) | no-cone | cone |
-| Patrones de `ai/` | `/*`, `!/claude_code/`, `!/opencode/`, `!/governance/00_CLAUDE.md` | `/*`, `!/*/`, `/governance/`, `/skills/`, `/templates/` (los ficheros de la raíz sí entran) |
-| Motivo de las exclusiones | `claude_code/` y `opencode/` se conservan solo en el remoto; `00_CLAUDE.md` es el de GDA | `claude_code/` (Docker) y `opencode/` no aplican: GDA se desarrolla en Windows sin Docker |
+| Patrones de `ai/` | `/*`, `!/claude_code/`, `!/opencode/`, `!/governance/projects/*/`, `/governance/projects/monitoring/` | `/*`, `!/*/`, `/governance/`, `/skills/`, `/templates/` (los ficheros de la raíz sí entran) |
+| Motivo de las exclusiones | `claude_code/` y `opencode/` se conservan solo en el remoto; `governance/projects/<otro proyecto>/` según §3.3 | `claude_code/` (Docker) y `opencode/` no aplican: GDA se desarrolla en Windows sin Docker |
 | `CLAUDE.md` | Symlink no versionado a `ai/governance/projects/monitoring/CLAUDE.md` | Fichero sin versionar en la raíz del workspace (no es repositorio git) con `@ai/governance/projects/GDA/CLAUDE.md` |
 | Punto de entrada | `AI_ENTRYPOINT.md` → symlink no versionado a `ai/governance/00_AI_ENTRYPOINT.md` | Sin fichero en la raíz: `ai/governance/projects/GDA/CLAUDE.md` remite a `ai/governance/00_AI_ENTRYPOINT.md` |
 | Copilot | `.github/copilot-instructions.md` → symlink no versionado a `ai/governance/projects/monitoring/copilot-instructions.md` | No existe `.github/` ⚠️ pendiente de decidir |
