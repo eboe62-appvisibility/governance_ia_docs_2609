@@ -1,0 +1,12 @@
+# Normalización de saltos de línea: LF en repositorio y en working tree
+# (Configuracion_Equipo_2608: LF obligatorio, sin autocrlf)
+* text=auto eol=lf
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+Dockerfile* text eol=lf
+*.pdf binary
+*.pptx binary
