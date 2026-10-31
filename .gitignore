@@ -65,9 +65,12 @@ Understand-Anything/
 # === Documentos de trabajo locales de cada proyecto (no versionados) ===
 # Este repositorio se monta como docs/ en cada proyecto (ADR-0035): las rutas
 # son relativas a su raíz, sin prefijo docs/.
-# StatusQuo: logs del servidor (IPs, direcciones de correo). Plan de acción: registro de trabajo.
-Project_Implementation/**/*StatusQuo*
-Project_Implementation/**/*planaccion*
+# Project_Implementation: carpeta de desarrollo de cada proyecto, solo local.
+# StatusQuo: logs del servidor (IPs, direcciones de correo), en cualquier carpeta.
+# Plan de acción: registro de trabajo, en cualquier carpeta.
+Project_Implementation/
+**/*StatusQuo*
+**/*planaccion*
 Project_ADRs/
 Project_Corrections/
 
