@@ -76,12 +76,12 @@ Añadir un proyecto consiste en añadir su columna; no requiere un ADR nuevo.
 
 | | server_monitoring_2509 (`monitoring`) | GDA |
 |---|---|---|
-| `docs/` | Clon de `governance_ia_docs_2609` | Clon completo de `governance_ia_docs_2609` |
+| `docs/` | Clon de `governance_ia_docs_2609` | Clon de `governance_ia_docs_2609` |
 | Carpetas propias en `docs/` | `<Tipo>/monitoring/` | `<Tipo>/GDA/` (hoy solo `Project_Definition/GDA/`) |
 | Checkout parcial de `docs/` | no-cone: `/*`, `!/*/`, `/decisiones/`, `/*/monitoring/` | no-cone: `/*`, `!/*/`, `/decisiones/`, `/*/GDA/` (`decisiones/` y los ficheros de la raíz siempre entran; las carpetas `<Tipo>/<otro proyecto>/` no) |
-| Checkout parcial de `ai/` (modo) | no-cone | cone |
-| Patrones de `ai/` | `/*`, `!/claude_code/`, `!/opencode/`, `!/governance/projects/*/`, `/governance/projects/monitoring/` | `/*`, `!/*/`, `/governance/`, `/skills/`, `/templates/` (los ficheros de la raíz sí entran) |
-| Motivo de las exclusiones | `claude_code/` y `opencode/` se conservan solo en el remoto; `governance/projects/<otro proyecto>/` según §3.3 | `claude_code/` (Docker) y `opencode/` no aplican: GDA se desarrolla en Windows sin Docker |
+| Checkout parcial de `ai/` (modo) | no-cone | no-cone |
+| Patrones de `ai/` | `/*`, `!/claude_code/`, `!/opencode/`, `!/governance/projects/*/`, `/governance/projects/monitoring/` | `/*`, `!/*/`, `/governance/`, `!/governance/projects/*/`, `/governance/projects/GDA/`, `/skills/`, `/templates/` (los ficheros de la raíz sí entran) |
+| Motivo de las exclusiones | `claude_code/` y `opencode/` se conservan solo en el remoto; `governance/projects/<otro proyecto>/` según §3.3 | `claude_code/` (Docker) y `opencode/` no aplican: GDA se desarrolla en Windows sin Docker; `governance/projects/<otro proyecto>/` según §3.3 |
 | `CLAUDE.md` | Symlink no versionado a `ai/governance/projects/monitoring/CLAUDE.md` | Fichero sin versionar en la raíz del workspace (no es repositorio git) con `@ai/governance/projects/GDA/CLAUDE.md` |
 | Punto de entrada | `AI_ENTRYPOINT.md` → symlink no versionado a `ai/governance/00_AI_ENTRYPOINT.md` | Sin fichero en la raíz: `ai/governance/projects/GDA/CLAUDE.md` remite a `ai/governance/00_AI_ENTRYPOINT.md` |
 | Copilot | `.github/copilot-instructions.md` → symlink no versionado a `ai/governance/projects/monitoring/copilot-instructions.md` | No existe `.github/` ⚠️ pendiente de decidir |
