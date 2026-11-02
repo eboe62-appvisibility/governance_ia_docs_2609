@@ -17,13 +17,46 @@ Tags:
 taxonomy, classification, knowledge-asset, knowledge-repository
 
 Related ADRs:
-ADR-0033
+ADR-0033, ADR-1106 (enmienda parcial — retirada del Relationship Record)
 
 Supersedes:
 NONE
 
 Superseded By:
 NONE
+
+---
+
+## Nota de Enmienda Parcial (2026-07-30)
+
+Puntos 2 y 4: revocados por ADR-1106.
+
+---
+
+## Nota de Revisión (2026-08-05) — Alcance de la transliteración de `ñ`
+
+Al curar `conocimiento/260805-language-calendario-lunar-enero-2026.md`, se detectó que la regla de transliteración `ñ → nn` del punto 3 (más abajo) se había extendido, sin decisión explícita, a dos contextos que esta ADR nunca cubrió:
+
+* **Campo `Tags:`** de varios Knowledge Assets ya existentes (`espanna`, `sennores`, `montannas`, `ensennanza`...), a veces incluso de forma inconsistente con el propio slug del nombre de archivo del mismo fichero (p. ej. `260726-economics-ruta-seda-ferroviaria-china-espanna.md` con tag `comercio-china-espana`, sin `ñ` ni `nn`).
+* **Mensajes de commit** (`anadir` en vez de `añadir`, repetido en al menos 9 commits de sesiones distintas).
+
+Se aclara: el punto 3 de esta Decision aplica **exclusivamente al `slug` del nombre de fichero de un Knowledge Asset** (necesidad real de seguridad de sistema de archivos/URL — un nombre de fichero debe ser portable entre sistemas operativos). No aplica a:
+
+* `Tags:` — sin restricción de sistema de archivos; `ADR-0033-Taxonomia_ADRs.md` § Política de Tags no exige ni sugiere transliteración de acentos o `ñ`. Los tags preservan la ortografía real del español (`españa`, `enseñanza`, `año`, `muñoz`...).
+* Mensajes de commit — Git admite UTF-8 sin ninguna restricción técnica; no hay justificación para omitir `ñ` o tildes.
+* Cualquier otro texto en prosa dentro de un Knowledge Asset (`Purpose`, `Description`, `Notes`, etc.), donde ya se escribe en español correcto sin que nadie lo haya cuestionado.
+
+Los Knowledge Assets ya afectados en `Tags:` se normalizaron en la rama de contenido correspondiente (`oushinet`, commit `dda8283`), conforme a la separación de rama gobernanza/contenido de ADR-1102. No se reescribe el historial de Git para corregir mensajes de commit ya publicados — se corrige el hábito hacia adelante.
+
+---
+
+## Nota de Ampliación (2026-08-06) — Carpeta `conocimiento_index/`
+
+El punto 2 fija archivos planos, sin subcarpetas por dominio, dentro de `conocimiento/`. Se añade una excepción acotada: los Knowledge Assets marcados `Knowledge Type: Index` (recopilatorios que agregan información ya presente en otros Knowledge Assets — vocabularios, glosarios consolidados, índices derivados de corpus) se alojan en `conocimiento_index/` — carpeta de primer nivel, hermana de `conocimiento/`, no una subcarpeta de esta (corregido 2026-08-07: se creó originalmente como subcarpeta `conocimiento/index/` y se trasladó a este nivel ese mismo día, con reescritura verificada mecánicamente de los enlaces afectados). La separación de `conocimiento/` sigue respondiendo al mismo criterio que motivó la excepción original — rol estructural, no dominio —, el mismo criterio que `ADR-1109 §5` ya usa para excluir estos ficheros de la bóveda de Obsidian.
+
+La convención de nombres del punto 3 se especializa para esta carpeta: un fichero en `conocimiento_index/` se llama `YYMMDD-index-domain_principal-slug.md` — se inserta el segmento literal `index` entre la fecha y el dominio, señalando el rol de la ficha en el propio nombre de archivo, no solo en `Knowledge Type` y en la ubicación. El resto del punto 3 (fecha de curación, dominio del vocabulario canónico, transliteración de `ñ`) no cambia.
+
+Primer caso real: `260801-index-language-hsk1-mandarin-corner-150-oraciones.md`, `260801-index-language-hsk1-xindongfang-vocabulario.md` y `260802-index-geography-ubicaciones-conocimiento.md` se trasladaron a `conocimiento/index/` y renombraron el 2026-08-06 (ver `ADR-1109 §5` para el efecto sobre la exclusión de la bóveda de Obsidian). El slug de la tercera ficha se simplificó de paso (`indice-ubicaciones-conocimiento` → `ubicaciones-conocimiento`) al quedar la palabra "índice" redundante con el nuevo segmento `index` del nombre. El 2026-08-07 esta carpeta, junto con las restantes fichas Index creadas en el ínterin, se trasladó de `conocimiento/index/` a `conocimiento_index/` conforme a la corrección de este mismo punto.
 
 ---
 
@@ -43,11 +76,9 @@ Esta carencia se hizo evidente al catalogar tres artículos de la revista China 
 
 1. `conocimiento/` (raíz del repositorio, hermana de `asignaturas/`, `fuentes/`, `docs/`, `ai/`) se adopta como la implementación física del componente "Knowledge Repository" definido en `02_MASTER_ARCHITECTURE.md` §4.
 
-2. Estructura interna:
-   - `conocimiento/*.md` — instancias de `30_knowledge_asset.md` (archivos planos, sin subcarpetas por dominio mientras el volumen no lo justifique).
-   - `conocimiento/relaciones/*.md` — instancias de `31_relationship_record.md`, usando el mismo nombre base que su Knowledge Asset emparejado (la subcarpeta ya distingue el tipo de artefacto; no se añade sufijo `_relacion`).
+2. `conocimiento/*.md` — instancias de `30_knowledge_asset.md` (archivos planos, sin subcarpetas por dominio mientras el volumen no lo justifique). *(La subcarpeta `conocimiento/relaciones/` descrita originalmente en este punto fue revocada por ADR-1106.)*
 
-3. Convención de nombres para archivos de Knowledge Asset y su Relationship Record emparejado:
+3. Convención de nombres para archivos de Knowledge Asset:
 
    ```
    YYMMDD-domain_principal-slug.md
@@ -56,10 +87,11 @@ Esta carencia se hizo evidente al catalogar tres artículos de la revista China 
    - `YYMMDD`: fecha en que se curó/redactó el Knowledge Asset (no la fecha de publicación de la fuente original, que puede no conocerse con precisión de día — evita fabricar datos, conforme al principio de veracidad de `00_PROJECT_VISION_Chino_Definicion_Proyecto.md`).
    - `domain_principal`: el primer término listado en el campo `Domain` de la ficha, en minúsculas, tomado del vocabulario canónico de `ADR-0033-Taxonomia_ADRs.md` § Domain.
    - `slug`: identificador breve en kebab-case del tema.
+   - **Transliteración de `ñ`**: se sustituye por `nn` (nunca por `n` simple). Regla añadida el 2026-08-01 tras detectar un uso inconsistente previo (`n` simple) que genera colisiones ortográficas reales del español (p. ej. `año` → `ano` es una palabra española distinta y no relacionada; `año` → `anno` evita la colisión). Los slugs ya existentes con `n` simple (`espana`, `senores`, `montanas`, etc.) quedan pendientes de una refactorización planificada aparte; esta regla aplica de forma obligatoria a partir de esta fecha para cualquier slug nuevo.
 
-4. Los Knowledge Assets en `conocimiento/` referencian sus fuentes exclusivamente mediante `31_relationship_record.md` (relación `derived_from`). No se duplica contenido de la fuente ni se incrustan identificadores específicos de la fuente (p. ej. códigos de escaneo OCR) en el nombre del propio Knowledge Asset.
+4. **[REVOCADO POR ADR-1106]** La procedencia de cada Knowledge Asset se documenta en su propia sección `Evidence and Sources`.
 
-5. El campo `Domain` de `30_knowledge_asset.md` y `31_relationship_record.md` reutiliza el vocabulario canónico de `ADR-0033-Taxonomia_ADRs.md` § Domain como fuente única — no se mantienen listas de ejemplos divergentes entre plantillas.
+5. El campo `Domain` de `30_knowledge_asset.md` reutiliza el vocabulario canónico de `ADR-0033-Taxonomia_ADRs.md` § Domain como fuente única — no se mantienen listas de ejemplos divergentes entre plantillas.
 
 ---
 
@@ -89,4 +121,3 @@ Esta carencia se hizo evidente al catalogar tres artículos de la revista China 
 * ADR-0033-Taxonomia_ADRs.md
 * docs/Project_Definition/02_MASTER_ARCHITECTURE.md
 * ai/templates/30_knowledge_asset.md
-* ai/templates/31_relationship_record.md

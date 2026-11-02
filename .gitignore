@@ -79,3 +79,7 @@ arquitectura/*/.ua/intermediate/
 arquitectura/*/.ua/tmp/
 arquitectura/*/.ua/diff-overlay.json
 arquitectura/*/.ua/.trash-*/
+
+# Grafo de Understand-Anything de Knowledge: solo local. Resume asignaturas/,
+# que contiene datos personales, y este repositorio tiene remoto (ADR-0035 §4).
+arquitectura/Knowledge/.ua/

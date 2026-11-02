@@ -46,10 +46,10 @@ Aparte de esa regla de separación, se ha clarificado durante esta sesión un se
      ↑ (integración futura, una vez develop esté maduro)
    develop
      ↑ (integración futura, una vez la rama de contenido esté madura)
-   rama(s) de contenido — p. ej. cbi_260726
+   rama(s) de contenido — nombre libre, sin convención fija (punto 3)
    ```
 
-2. **`develop` contiene exclusivamente artefactos de gobernanza**: `ai/` (governance, templates, skills), `docs/Project_Definition/`, `docs/decisiones/` (ADRs). Nunca contiene cambios en `fuentes/` ni `conocimiento/`, incluso si una instrucción puntual lo solicita literalmente — esta ADR prevalece sobre instrucciones ad hoc que la contradigan sin revisarla explícitamente primero.
+2. **`develop` no recibe commits directos en `fuentes/` ni `conocimiento/`**, incluso si una instrucción puntual lo solicita literalmente — esta ADR prevalece sobre instrucciones ad hoc que la contradigan sin revisarla explícitamente primero. Sí puede recibir esos cambios por fusión desde una rama de contenido, con o sin cierre de esa rama (corregido 2026-08-06, ver `ADR-1103 §2`).
 
 3. **El conocimiento adquirido vive en una o varias ramas de contenido**, paralelas a `develop`. El número y el criterio de creación de estas ramas (una única rama evergreen, o una nueva rama por cada fuente/tema/adquisición) queda **deliberadamente abierto** mientras el proyecto define sus objetivos, gestión y procedimientos — no se fuerza una convención de nomenclatura o de una-rama-por-adquisición todavía.
 
